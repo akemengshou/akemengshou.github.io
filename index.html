@@ -5,85 +5,215 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天线支架硬性指标数据看板</title>
     <style>
-        body { font-family: 'Microsoft YaHei', sans-serif; margin: 20px; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
-        h1 { text-align: center; color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: center; border: 1px solid #ddd; }
-        th { background: #4CAF50; color: white; }
-        tr:nth-child(even) { background: #f9f9f9; }
-        .highlight { background: #e8f5e9 !important; font-weight: bold; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 40px; text-align: center; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; font-weight: 600; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .dashboard { padding: 30px 40px; }
+        .filter-section { background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .filter-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .filter-title::before { content: "🔍"; font-size: 18px; }
+        .filter-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 12px; color: #666; font-weight: 500; }
+        .filter-group select { padding: 10px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
+        .filter-group select:focus { outline: none; border-color: #667eea; }
+        .filter-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-secondary:hover { background: #d0d0d0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; padding: 20px; text-align: center; transition: transform 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card.success { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+        .stat-card.warning { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+        .stat-unit { font-size: 12px; color: #999; }
+        .table-container { overflow-x: auto; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 12px; text-align: center; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #e8f4f8; }
+        .highlight { background-color: #e8f5e9 !important; font-weight: bold; color: #2e7d32; }
+        .summary-row { background-color: #e3f2fd !important; font-weight: bold; }
+        .target-cell { color: #1976d2; }
+        .footer { background: #f8f9fa; padding: 20px 40px; text-align: center; color: #666; font-size: 13px; }
+        @media (max-width: 768px) { .container { border-radius: 0; } .header, .dashboard, .footer { padding: 20px; } .filter-controls { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>天线支架硬性指标数据看板</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>供应商</th>
-                    <th>月份</th>
-                    <th>退料数量</th>
-                    <th>投入数</th>
-                    <th>DPPM</th>
-                    <th>DPPM目标</th>
-                    <th>IQC LAR</th>
-                    <th>LAR目标</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>AAC</td>
-                    <td>1月</td>
-                    <td>0</td>
-                    <td>1,123,382</td>
-                    <td class="highlight">0.00</td>
-                    <td>45.9</td>
-                    <td class="highlight">100.00%</td>
-                    <td>99.13%</td>
-                </tr>
-                <tr>
-                    <td>AAC</td>
-                    <td>2月</td>
-                    <td>0</td>
-                    <td>1,136,256</td>
-                    <td class="highlight">0.00</td>
-                    <td>45.9</td>
-                    <td class="highlight">100.00%</td>
-                    <td>99.13%</td>
-                </tr>
-                <tr>
-                    <td>立讯</td>
-                    <td>1月</td>
-                    <td>0</td>
-                    <td>605,625</td>
-                    <td class="highlight">0.00</td>
-                    <td>45.9</td>
-                    <td class="highlight">100.00%</td>
-                    <td>99.13%</td>
-                </tr>
-                <tr>
-                    <td>睿翔</td>
-                    <td>1月</td>
-                    <td>29</td>
-                    <td>2,720,123</td>
-                    <td class="highlight">10.66</td>
-                    <td>45.9</td>
-                    <td class="highlight">100.00%</td>
-                    <td>99.13%</td>
-                </tr>
-                <tr class="highlight">
-                    <td>汇总</td>
-                    <td>1月</td>
-                    <td>29</td>
-                    <td>4,449,130</td>
-                    <td>6.52</td>
-                    <td>45.9</td>
-                    <td>100.00%</td>
-                    <td>99.13%</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="header">
+            <h1>📊 天线支架硬性指标数据看板</h1>
+            <p>2026年天线支架IQC数据 | 实时监控</p>
+        </div>
+        <div class="dashboard">
+            <div class="filter-section">
+                <div class="filter-title">筛选条件</div>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label>年度筛选</label>
+                        <select id="yearFilter">
+                            <option value="all">全部年度</option>
+                            <option value="2026" selected>2026年</option>
+                            <option value="2025">2025年</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>月度筛选</label>
+                        <select id="monthFilter">
+                            <option value="all">全部月份</option>
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>供应商筛选</label>
+                        <select id="supplierFilter">
+                            <option value="all">全部供应商</option>
+                            <option value="aac">AAC</option>
+                            <option value="lixun">立讯</option>
+                            <option value="ruixiang">睿翔</option>
+                            <option value="total">汇总</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn btn-primary" onclick="applyFilters()">应用筛选</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">重置筛选</button>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card success">
+                    <div class="stat-label">DPPM</div>
+                    <div class="stat-value" id="dppmValue">3.01</div>
+                    <div class="stat-unit">目标: 45.9 ✅</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">IQC LAR</div>
+                    <div class="stat-value" id="larValue">99.91%</div>
+                    <div class="stat-unit">目标: 99.13% ✅</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">退料数量</div>
+                    <div class="stat-value" id="returnQtyValue">47</div>
+                    <div class="stat-unit">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">投入数</div>
+                    <div class="stat-value" id="inputQtyValue">15.6M</div>
+                    <div class="stat-unit">Total</div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>供应商</th>
+                            <th>月份</th>
+                            <th>退料数量</th>
+                            <th>投入数</th>
+                            <th>DPPM</th>
+                            <th>DPPM目标</th>
+                            <th>接收批数</th>
+                            <th>来料总批数</th>
+                            <th>IQC LAR</th>
+                            <th>LAR目标</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer">
+            <p>数据来源: 2026年天线支架IQC数据 | 更新时间: 2026年5月9日</p>
+        </div>
     </div>
+    <script>
+        const data = [
+            { supplier: 'AAC', month: '1月', returnQty: 0, inputQty: 1123382, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 147, totalBatch: 147, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: 'AAC', month: '2月', returnQty: 0, inputQty: 1136256, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 101, totalBatch: 101, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: 'AAC', month: '3月', returnQty: 0, inputQty: 925544, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 85, totalBatch: 85, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: 'AAC', month: '4月', returnQty: 0, inputQty: 1068619, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 84, totalBatch: 84, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '立讯', month: '1月', returnQty: 0, inputQty: 605625, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 29, totalBatch: 29, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '立讯', month: '2月', returnQty: 0, inputQty: 420820, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 31, totalBatch: 31, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '立讯', month: '3月', returnQty: 0, inputQty: 600725, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 38, totalBatch: 38, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '立讯', month: '4月', returnQty: 3, inputQty: 676246, dppm: 4.44, dppmTarget: 45.9, receiveBatch: 51, totalBatch: 51, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '睿翔', month: '1月', returnQty: 29, inputQty: 2720123, dppm: 10.66, dppmTarget: 45.9, receiveBatch: 129, totalBatch: 129, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '睿翔', month: '2月', returnQty: 0, inputQty: 1882457, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 103, totalBatch: 103, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '睿翔', month: '3月', returnQty: 3, inputQty: 1962867, dppm: 1.53, dppmTarget: 45.9, receiveBatch: 114, totalBatch: 114, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '睿翔', month: '4月', returnQty: 12, inputQty: 2512996, dppm: 4.78, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 238, lar: '99.58%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '1月', returnQty: 29, inputQty: 4449130, dppm: 6.52, dppmTarget: 45.9, receiveBatch: 305, totalBatch: 305, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '2月', returnQty: 0, inputQty: 3439533, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 235, totalBatch: 235, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '3月', returnQty: 3, inputQty: 3489136, dppm: 0.86, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 237, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '4月', returnQty: 15, inputQty: 4257861, dppm: 3.52, dppmTarget: 45.9, receiveBatch: 372, totalBatch: 373, lar: '100.00%', larTarget: '99.13%' },
+        ];
+        function initTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
+                tableBody.appendChild(tr);
+            });
+        }
+        function applyFilters() {
+            const monthFilter = document.getElementById('monthFilter').value;
+            const supplierFilter = document.getElementById('supplierFilter').value;
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            let filteredData = data;
+            if (monthFilter !== 'all') {
+                const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月', '5': '5月', '6': '6月', '7': '7月', '8': '8月', '9': '9月', '10': '10月', '11': '11月', '12': '12月'};
+                filteredData = filteredData.filter(row => row.month === monthMap[monthFilter]);
+            }
+            if (supplierFilter !== 'all') {
+                const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔', 'total': '汇总'};
+                filteredData = filteredData.filter(row => row.supplier === supplierMap[supplierFilter]);
+            }
+            filteredData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
+                tableBody.appendChild(tr);
+            });
+            updateStats(filteredData);
+        }
+        function updateStats(filteredData) {
+            let totalReturnQty = 0, totalInputQty = 0, totalDppm = 0, count = 0;
+            filteredData.forEach(row => {
+                totalReturnQty += row.returnQty;
+                totalInputQty += row.inputQty;
+                totalDppm += row.dppm;
+                count++;
+            });
+            document.getElementById('dppmValue').textContent = (totalDppm / count).toFixed(2);
+            document.getElementById('larValue').textContent = '100.00%';
+            document.getElementById('returnQtyValue').textContent = totalReturnQty;
+            document.getElementById('inputQtyValue').textContent = (totalInputQty / 1000000).toFixed(1) + 'M';
+        }
+        function resetFilters() {
+            document.getElementById('monthFilter').value = 'all';
+            document.getElementById('supplierFilter').value = 'all';
+            initTable();
+            updateStats(data);
+        }
+        window.onload = function() { initTable(); };
+    </script>
 </body>
 </html>
