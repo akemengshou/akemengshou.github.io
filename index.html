@@ -4,9 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天线支架硬性指标数据看板</title>
+    <style>
+        body { font-family: 'Microsoft YaHei', sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: center; border: 1px solid #ddd; }
+        th { background: #4CAF50; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .highlight { background: #e8f5e9 !important; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <h1>天线支架硬性指标数据看板</h1>
-    <p>网站正在建设中...</p>
+    <div class="container">
+        <h1>天线支架硬性指标数据看板</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>供应商</th>
+                    <th>月份</th>
+                    <th>退料数量</th>
+                    <th>投入数</th>
+                    <th>DPPM</th>
+                    <th>DPPM目标</th>
+                    <th>IQC LAR</th>
+                    <th>LAR目标</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>AAC</td>
+                    <td>1月</td>
+                    <td>0</td>
+                    <td>1,123,382</td>
+                    <td class="highlight">0.00</td>
+                    <td>45.9</td>
+                    <td class="highlight">100.00%</td>
+                    <td>99.13%</td>
+                </tr>
+                <tr>
+                    <td>AAC</td>
+                    <td>2月</td>
+                    <td>0</td>
+                    <td>1,136,256</td>
+                    <td class="highlight">0.00</td>
+                    <td>45.9</td>
+                    <td class="highlight">100.00%</td>
+                    <td>99.13%</td>
+                </tr>
+                <tr>
+                    <td>立讯</td>
+                    <td>1月</td>
+                    <td>0</td>
+                    <td>605,625</td>
+                    <td class="highlight">0.00</td>
+                    <td>45.9</td>
+                    <td class="highlight">100.00%</td>
+                    <td>99.13%</td>
+                </tr>
+                <tr>
+                    <td>睿翔</td>
+                    <td>1月</td>
+                    <td>29</td>
+                    <td>2,720,123</td>
+                    <td class="highlight">10.66</td>
+                    <td>45.9</td>
+                    <td class="highlight">100.00%</td>
+                    <td>99.13%</td>
+                </tr>
+                <tr class="highlight">
+                    <td>汇总</td>
+                    <td>1月</td>
+                    <td>29</td>
+                    <td>4,449,130</td>
+                    <td>6.52</td>
+                    <td>45.9</td>
+                    <td>100.00%</td>
+                    <td>99.13%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
