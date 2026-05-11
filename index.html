@@ -241,15 +241,15 @@
 
             try {
                 // 显示同步提示
-                showSyncMessage('正在从飞书同步数据，请稍候...');
+                showSyncMessage('请在Claude Code中运行 /sync-feishu 同步飞书数据，完成后点击此按钮刷新');
 
                 // 倒计时30秒
                 let countdown = 30;
-                btn.textContent = `同步中... ${countdown}s`;
+                btn.textContent = `等待同步... ${countdown}s`;
 
                 const countdownInterval = setInterval(() => {
                     countdown--;
-                    btn.textContent = `同步中... ${countdown}s`;
+                    btn.textContent = `等待同步... ${countdown}s`;
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
                         location.reload();
