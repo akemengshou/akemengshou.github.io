@@ -95,7 +95,6 @@
                             <option value="aac">AAC</option>
                             <option value="lixun">立讯</option>
                             <option value="ruixiang">睿翔</option>
-                            <option value="total">汇总</option>
                         </select>
                     </div>
                 </div>
@@ -163,10 +162,6 @@
             { supplier: '睿翔', month: '2月', returnQty: 0, inputQty: 1882457, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 103, totalBatch: 103, lar: '100.00%', larTarget: '99.13%' },
             { supplier: '睿翔', month: '3月', returnQty: 3, inputQty: 1962867, dppm: 1.53, dppmTarget: 45.9, receiveBatch: 114, totalBatch: 114, lar: '100.00%', larTarget: '99.13%' },
             { supplier: '睿翔', month: '4月', returnQty: 12, inputQty: 2512996, dppm: 4.78, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 238, lar: '99.58%', larTarget: '99.13%' },
-            { supplier: '汇总', month: '1月', returnQty: 29, inputQty: 4449130, dppm: 6.52, dppmTarget: 45.9, receiveBatch: 305, totalBatch: 305, lar: '100.00%', larTarget: '99.13%' },
-            { supplier: '汇总', month: '2月', returnQty: 0, inputQty: 3439533, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 235, totalBatch: 235, lar: '100.00%', larTarget: '99.13%' },
-            { supplier: '汇总', month: '3月', returnQty: 3, inputQty: 3489136, dppm: 0.86, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 237, lar: '100.00%', larTarget: '99.13%' },
-            { supplier: '汇总', month: '4月', returnQty: 15, inputQty: 4257861, dppm: 3.52, dppmTarget: 45.9, receiveBatch: 372, totalBatch: 373, lar: '100.00%', larTarget: '99.13%' },
         ];
 
         // 防抖定时器
@@ -207,7 +202,7 @@
 
             // 供应商筛选
             if (supplierFilter !== 'all') {
-                const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔', 'total': '汇总'};
+                const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔'};
                 filteredData = filteredData.filter(row => row.supplier === supplierMap[supplierFilter]);
             }
 
