@@ -124,7 +124,6 @@
                 </div>
                 <div class="filter-buttons">
                     <button class="btn btn-primary" onclick="refreshData()">刷新数据</button>
-                    <button class="btn btn-success" onclick="manualSync()">手动同步</button>
                     <button class="btn btn-secondary" onclick="resetFilters()">重置筛选</button>
                 </div>
             </div>
@@ -284,14 +283,6 @@
             if (msgDiv) {
                 msgDiv.style.display = 'none';
             }
-        }
-
-        // 手动同步 - 打开GitHub Actions页面
-        function manualSync() {
-            const actionsUrl = 'https://github.com/akemengshou/akemengshou.github.io/actions/workflows/sync-feishu.yml';
-            window.open(actionsUrl, '_blank');
-            showSyncMessage('请在新打开的页面点击"Run workflow"触发同步，完成后返回此页面');
-            setTimeout(() => hideSyncMessage(), 8000);
         }
 
         // 防抖定时器
