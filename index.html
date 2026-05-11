@@ -124,6 +124,7 @@
                 </div>
                 <div class="filter-buttons">
                     <button class="btn btn-primary" onclick="refreshData()">刷新数据</button>
+                    <button class="btn btn-success" onclick="manualSync()">手动同步</button>
                     <button class="btn btn-secondary" onclick="resetFilters()">重置筛选</button>
                 </div>
             </div>
@@ -234,21 +235,76 @@
             }
         }
 
-        // 刷新数据（从data.json重新加载）
+        // 刷新数据（触发飞书同步并重新加载）
         async function refreshData() {
             const btn = event.target;
-            btn.textContent = '刷新中...';
+            btn.textContent = '同步中...';
             btn.disabled = true;
 
-            await fetchData();
+            try {
+                // 显示同步提示
+                showSyncMessage('正在从飞书同步数据，请稍候...');
 
-            btn.textContent = '✓ 已刷新';
-            showInstantIndicator();
+                // 触发GitHub Actions工作流
+                const response = await fetch('https://api.github.com/repos/akemengshou/akemengshou.github.io/dispatches', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_type: 'feishu-update'
+                    })
+                });
 
-            setTimeout(() => {
-                btn.textContent = '刷新数据';
-                btn.disabled = false;
-            }, 1500);
+                if (response.ok || response.status === 202) {
+                    showSyncMessage('同步已触发，等待GitHub Actions完成（约1-2分钟）...');
+                    // 等待后刷新数据
+                    setTimeout(async () => {
+                        await fetchData();
+                        showSyncMessage('✓ 数据已更新');
+                        setTimeout(() => hideSyncMessage(), 2000);
+                    }, 90000); // 等待90秒让GitHub Actions完成
+                } else {
+                    // 如果API调用失败，提示用户手动触发
+                    showSyncMessage('自动同步需要GitHub Token，请点击"手动同步"按钮');
+                    setTimeout(() => hideSyncMessage(), 5000);
+                }
+            } catch (error) {
+                showSyncMessage('网络错误，请稍后重试');
+                setTimeout(() => hideSyncMessage(), 3000);
+            }
+
+            btn.textContent = '刷新数据';
+            btn.disabled = false;
+        }
+
+        // 显示同步消息
+        function showSyncMessage(message) {
+            let msgDiv = document.getElementById('syncMessage');
+            if (!msgDiv) {
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'syncMessage';
+                msgDiv.style.cssText = 'position:fixed;top:20px;right:20px;background:#667eea;color:white;padding:15px 25px;border-radius:10px;z-index:1000;box-shadow:0 5px 15px rgba(0,0,0,0.2);';
+                document.body.appendChild(msgDiv);
+            }
+            msgDiv.textContent = message;
+            msgDiv.style.display = 'block';
+        }
+
+        // 隐藏同步消息
+        function hideSyncMessage() {
+            const msgDiv = document.getElementById('syncMessage');
+            if (msgDiv) {
+                msgDiv.style.display = 'none';
+            }
+        }
+
+        // 手动同步 - 打开GitHub Actions页面
+        function manualSync() {
+            window.open('https://github.com/akemengshou/akemengshou.github.io/actions/workflows/sync-feishu.yml', '_blank');
+            showSyncMessage('请在GitHub Actions页面点击"Run workflow"触发同步');
+            setTimeout(() => hideSyncMessage(), 5000);
         }
 
         // 防抖定时器
