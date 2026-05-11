@@ -261,17 +261,23 @@
                 const larValue = parseFloat(row.lar.replace('%', ''));
                 const larTargetValue = parseFloat(row.larTarget.replace('%', ''));
                 let larClass, larIcon;
+
+                console.log(`LAR检查: ${row.supplier} ${row.month} = ${larValue}%, 目标=${larTargetValue}%`);
+
                 if (larValue < larTargetValue) {
                     // LAR未达标，红色警告
                     larClass = 'warning';
                     larIcon = ' <span class="warning-icon">⚠️</span>';
+                    console.log(`  -> 红色警告: ${larValue}% < ${larTargetValue}%`);
                 } else if (larValue < 100) {
                     // LAR达标但不是100%，浅黄色警告
                     larClass = 'warning-yellow';
                     larIcon = ' <span class="warning-icon-yellow">⚠️</span>';
+                    console.log(`  -> 浅黄色警告: ${larValue}% < 100%`);
                 } else {
                     larClass = 'highlight';
                     larIcon = '';
+                    console.log(`  -> 正常: ${larValue}% = 100%`);
                 }
 
                 tr.innerHTML = `
