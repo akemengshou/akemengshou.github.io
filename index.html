@@ -59,7 +59,7 @@
                 <div class="filter-controls">
                     <div class="filter-group">
                         <label>年度筛选</label>
-                        <select id="yearFilter" onchange="applyFilters()">
+                        <select id="yearFilter">
                             <option value="all">全部年度</option>
                             <option value="2026" selected>2026年</option>
                             <option value="2025">2025年</option>
@@ -67,7 +67,7 @@
                     </div>
                     <div class="filter-group">
                         <label>月度筛选</label>
-                        <select id="monthFilter" onchange="applyFilters()">
+                        <select id="monthFilter">
                             <option value="all">全部月份</option>
                             <option value="1">1月</option>
                             <option value="2">2月</option>
@@ -85,7 +85,7 @@
                     </div>
                     <div class="filter-group">
                         <label>供应商筛选</label>
-                        <select id="supplierFilter" onchange="applyFilters()">
+                        <select id="supplierFilter">
                             <option value="all">全部供应商</option>
                             <option value="aac">AAC</option>
                             <option value="lixun">立讯</option>
@@ -95,6 +95,7 @@
                     </div>
                 </div>
                 <div class="filter-buttons">
+                    <button class="btn btn-primary" onclick="applyFilters()">应用筛选</button>
                     <button class="btn btn-secondary" onclick="resetFilters()">重置筛选</button>
                 </div>
             </div>
@@ -155,4 +156,64 @@
             { supplier: '立讯', month: '3月', returnQty: 0, inputQty: 600725, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 38, totalBatch: 38, lar: '100.00%', larTarget: '99.13%' },
             { supplier: '立讯', month: '4月', returnQty: 3, inputQty: 676246, dppm: 4.44, dppmTarget: 45.9, receiveBatch: 51, totalBatch: 51, lar: '100.00%', larTarget: '99.13%' },
             { supplier: '睿翔', month: '1月', returnQty: 29, inputQty: 2720123, dppm: 10.66, dppmTarget: 45.9, receiveBatch: 129, totalBatch: 129, lar: '100.00%', larTarget: '99.13%' },
-            { supplier: '睿翔', month: '2月', returnQty: 0, inputQty: 1882457, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 10
+            { supplier: '睿翔', month: '2月', returnQty: 0, inputQty: 1882457, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 103, totalBatch: 103, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '睿翔', month: '3月', returnQty: 3, inputQty: 1962867, dppm: 1.53, dppmTarget: 45.9, receiveBatch: 114, totalBatch: 114, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '睿翔', month: '4月', returnQty: 12, inputQty: 2512996, dppm: 4.78, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 238, lar: '99.58%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '1月', returnQty: 29, inputQty: 4449130, dppm: 6.52, dppmTarget: 45.9, receiveBatch: 305, totalBatch: 305, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '2月', returnQty: 0, inputQty: 3439533, dppm: 0.00, dppmTarget: 45.9, receiveBatch: 235, totalBatch: 235, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '3月', returnQty: 3, inputQty: 3489136, dppm: 0.86, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 237, lar: '100.00%', larTarget: '99.13%' },
+            { supplier: '汇总', month: '4月', returnQty: 15, inputQty: 4257861, dppm: 3.52, dppmTarget: 45.9, receiveBatch: 372, totalBatch: 373, lar: '100.00%', larTarget: '99.13%' },
+        ];
+        function initTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
+                tableBody.appendChild(tr);
+            });
+        }
+        function applyFilters() {
+            const monthFilter = document.getElementById('monthFilter').value;
+            const supplierFilter = document.getElementById('supplierFilter').value;
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            let filteredData = data;
+            if (monthFilter !== 'all') {
+                const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月', '5': '5月', '6': '6月', '7': '7月', '8': '8月', '9': '9月', '10': '10月', '11': '11月', '12': '12月'};
+                filteredData = filteredData.filter(row => row.month === monthMap[monthFilter]);
+            }
+            if (supplierFilter !== 'all') {
+                const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔', 'total': '汇总'};
+                filteredData = filteredData.filter(row => row.supplier === supplierMap[supplierFilter]);
+            }
+            filteredData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
+                tableBody.appendChild(tr);
+            });
+            updateStats(filteredData);
+        }
+        function updateStats(filteredData) {
+            let totalReturnQty = 0, totalInputQty = 0, totalDppm = 0, count = 0;
+            filteredData.forEach(row => {
+                totalReturnQty += row.returnQty;
+                totalInputQty += row.inputQty;
+                totalDppm += row.dppm;
+                count++;
+            });
+            document.getElementById('dppmValue').textContent = (totalDppm / count).toFixed(2);
+            document.getElementById('larValue').textContent = '100.00%';
+            document.getElementById('returnQtyValue').textContent = totalReturnQty;
+            document.getElementById('inputQtyValue').textContent = (totalInputQty / 1000000).toFixed(1) + 'M';
+        }
+        function resetFilters() {
+            document.getElementById('monthFilter').value = 'all';
+            document.getElementById('supplierFilter').value = 'all';
+            initTable();
+            updateStats(data);
+        }
+        window.onload = function() { initTable(); };
+    </script>
+</body>
+</html>
