@@ -237,31 +237,31 @@
         // 刷新数据（触发飞书同步并重新加载）
         async function refreshData() {
             const btn = event.target;
-            btn.textContent = '同步中...';
             btn.disabled = true;
 
             try {
                 // 显示同步提示
                 showSyncMessage('正在从飞书同步数据，请稍候...');
 
-                // 打开GitHub Actions页面让用户手动触发
-                const actionsUrl = 'https://github.com/akemengshou/akemengshou.github.io/actions/workflows/sync-feishu.yml';
-                window.open(actionsUrl, '_blank');
+                // 倒计时30秒
+                let countdown = 30;
+                btn.textContent = `同步中... ${countdown}s`;
 
-                showSyncMessage('请在新打开的GitHub Actions页面点击"Run workflow"触发同步，完成后返回此页面点击"刷新数据"');
-
-                // 30秒后自动刷新页面
-                setTimeout(() => {
-                    location.reload();
-                }, 30000);
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    btn.textContent = `同步中... ${countdown}s`;
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        location.reload();
+                    }
+                }, 1000);
 
             } catch (error) {
                 showSyncMessage('网络错误，请稍后重试');
                 setTimeout(() => hideSyncMessage(), 3000);
+                btn.textContent = '刷新数据';
+                btn.disabled = false;
             }
-
-            btn.textContent = '刷新数据';
-            btn.disabled = false;
         }
 
         // 显示同步消息
