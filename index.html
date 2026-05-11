@@ -32,6 +32,15 @@
         .stat-card:hover { transform: translateY(-5px); }
         .stat-card.success { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
         .stat-card.warning { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .stat-card.danger { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .stat-card.danger .stat-value { color: #d32f2f; }
+        .stat-card.danger .stat-unit { color: #c62828; }
+        .warning-icon { display: inline-block; margin-left: 5px; }
+        .warning-icon.show { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 24px; font-weight: bold; color: #333; }
         .stat-unit { font-size: 12px; color: #999; }
@@ -49,6 +58,7 @@
         tr:nth-child(even) { background-color: #f8f9fa; }
         tr:hover { background-color: #e8f4f8; }
         .highlight { background-color: #e8f5e9 !important; font-weight: bold; color: #2e7d32; }
+        .warning { background-color: #fff3e0 !important; font-weight: bold; color: #e65100; }
         .summary-row { background-color: #e3f2fd !important; font-weight: bold; }
         .target-cell { color: #1976d2; }
         .footer { background: #f8f9fa; padding: 20px 40px; text-align: center; color: #666; font-size: 13px; }
@@ -111,15 +121,15 @@
                 </div>
             </div>
             <div class="stats-grid">
-                <div class="stat-card success">
+                <div class="stat-card" id="dppmCard">
                     <div class="stat-label">DPPM</div>
                     <div class="stat-value" id="dppmValue">3.01</div>
-                    <div class="stat-unit">目标: 45.9 ✅</div>
+                    <div class="stat-unit" id="dppmUnit">目标: 45.9</div>
                 </div>
-                <div class="stat-card success">
+                <div class="stat-card" id="larCard">
                     <div class="stat-label">IQC LAR</div>
                     <div class="stat-value" id="larValue">99.91%</div>
-                    <div class="stat-unit">目标: 99.13% ✅</div>
+                    <div class="stat-unit" id="larUnit">目标: 99.13%</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">退料数量</div>
@@ -239,7 +249,29 @@
 
             filteredData.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
+
+                // DPPM预警判断
+                const dppmClass = row.dppm > row.dppmTarget ? 'warning' : 'highlight';
+                const dppmIcon = row.dppm > row.dppmTarget ? ' ⚠️' : '';
+
+                // LAR预警判断
+                const larValue = parseFloat(row.lar.replace('%', ''));
+                const larTargetValue = parseFloat(row.larTarget.replace('%', ''));
+                const larClass = larValue < larTargetValue ? 'warning' : 'highlight';
+                const larIcon = larValue < larTargetValue ? ' ⚠️' : '';
+
+                tr.innerHTML = `
+                    <td>${row.supplier}</td>
+                    <td>${row.month}</td>
+                    <td>${row.returnQty}</td>
+                    <td>${row.inputQty.toLocaleString()}</td>
+                    <td class="${dppmClass}">${row.dppm}${dppmIcon}</td>
+                    <td class="target-cell">${row.dppmTarget}</td>
+                    <td>${row.receiveBatch}</td>
+                    <td>${row.totalBatch}</td>
+                    <td class="${larClass}">${row.lar}${larIcon}</td>
+                    <td class="target-cell">${row.larTarget}</td>
+                `;
                 tableBody.appendChild(tr);
             });
 
@@ -248,19 +280,52 @@
             showInstantIndicator();
         }
 
-        // 更新统计卡片
+        // 更新统计卡片（含预警）
         function updateStats(filteredData) {
-            let totalReturnQty = 0, totalInputQty = 0, totalDppm = 0, count = 0;
+            let totalReturnQty = 0, totalInputQty = 0, totalDppm = 0, totalLar = 0, count = 0;
             filteredData.forEach(row => {
                 totalReturnQty += row.returnQty;
                 totalInputQty += row.inputQty;
                 totalDppm += row.dppm;
+                totalLar += parseFloat(row.lar.replace('%', ''));
                 count++;
             });
 
             const avgDppm = count > 0 ? (totalDppm / count).toFixed(2) : '0.00';
+            const avgLar = count > 0 ? (totalLar / count).toFixed(2) : '0.00';
+
+            // 预警阈值
+            const dppmTarget = 45.9;
+            const larTarget = 99.13;
+
+            // DPPM预警
+            const dppmCard = document.getElementById('dppmCard');
+            const dppmUnit = document.getElementById('dppmUnit');
+            dppmCard.className = 'stat-card';
+
+            if (parseFloat(avgDppm) > dppmTarget) {
+                dppmCard.classList.add('danger');
+                dppmUnit.innerHTML = `目标: ${dppmTarget} ⚠️ 超标`;
+            } else {
+                dppmCard.classList.add('success');
+                dppmUnit.innerHTML = `目标: ${dppmTarget} ✅`;
+            }
+
+            // LAR预警
+            const larCard = document.getElementById('larCard');
+            const larUnit = document.getElementById('larUnit');
+            larCard.className = 'stat-card';
+
+            if (parseFloat(avgLar) < larTarget) {
+                larCard.classList.add('danger');
+                larUnit.innerHTML = `目标: ${larTarget}% ⚠️ 未达标`;
+            } else {
+                larCard.classList.add('success');
+                larUnit.innerHTML = `目标: ${larTarget}% ✅`;
+            }
+
             document.getElementById('dppmValue').textContent = avgDppm;
-            document.getElementById('larValue').textContent = '100.00%';
+            document.getElementById('larValue').textContent = avgLar + '%';
             document.getElementById('returnQtyValue').textContent = totalReturnQty;
             document.getElementById('inputQtyValue').textContent = (totalInputQty / 1000000).toFixed(1) + 'M';
         }
