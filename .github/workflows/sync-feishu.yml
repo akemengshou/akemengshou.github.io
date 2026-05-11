@@ -4,9 +4,9 @@ on:
   # 支持手动触发
   workflow_dispatch:
 
-  # 定时任务：每30分钟检查一次
+  # 定时任务：每周四上午9:50自动检查
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '50 9 * * 4'
 
   # 支持通过repository_dispatch事件触发（飞书Webhook调用）
   repository_dispatch:
