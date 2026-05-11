@@ -18,8 +18,8 @@
         .filter-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .filter-group { display: flex; flex-direction: column; gap: 5px; }
         .filter-group label { font-size: 12px; color: #666; font-weight: 500; }
-        .filter-group select { padding: 10px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
-        .filter-group select:focus { outline: none; border-color: #667eea; }
+        .filter-group select { padding: 10px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s ease; }
+        .filter-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); }
         .filter-buttons { display: flex; gap: 10px; margin-top: 15px; }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
@@ -44,6 +44,8 @@
         .summary-row { background-color: #e3f2fd !important; font-weight: bold; }
         .target-cell { color: #1976d2; }
         .footer { background: #f8f9fa; padding: 20px 40px; text-align: center; color: #666; font-size: 13px; }
+        .instant-indicator { display: inline-block; margin-left: 10px; color: #4caf50; font-size: 12px; opacity: 0; transition: opacity 0.3s ease; }
+        .instant-indicator.show { opacity: 1; }
         @media (max-width: 768px) { .container { border-radius: 0; } .header, .dashboard, .footer { padding: 20px; } .filter-controls { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -55,7 +57,10 @@
         </div>
         <div class="dashboard">
             <div class="filter-section">
-                <div class="filter-title">筛选条件</div>
+                <div class="filter-title">
+                    筛选条件
+                    <span class="instant-indicator" id="instantIndicator">✓ 已即时更新</span>
+                </div>
                 <div class="filter-controls">
                     <div class="filter-group">
                         <label>年度筛选</label>
@@ -95,7 +100,6 @@
                     </div>
                 </div>
                 <div class="filter-buttons">
-                    <button class="btn btn-primary" onclick="applyFilters()">应用筛选</button>
                     <button class="btn btn-secondary" onclick="resetFilters()">重置筛选</button>
                 </div>
             </div>
@@ -164,6 +168,11 @@
             { supplier: '汇总', month: '3月', returnQty: 3, inputQty: 3489136, dppm: 0.86, dppmTarget: 45.9, receiveBatch: 237, totalBatch: 237, lar: '100.00%', larTarget: '99.13%' },
             { supplier: '汇总', month: '4月', returnQty: 15, inputQty: 4257861, dppm: 3.52, dppmTarget: 45.9, receiveBatch: 372, totalBatch: 373, lar: '100.00%', larTarget: '99.13%' },
         ];
+
+        // 防抖定时器
+        let debounceTimer;
+
+        // 初始化表格
         function initTable() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -173,27 +182,46 @@
                 tableBody.appendChild(tr);
             });
         }
+
+        // 应用筛选（即时筛选）
         function applyFilters() {
+            const yearFilter = document.getElementById('yearFilter').value;
             const monthFilter = document.getElementById('monthFilter').value;
             const supplierFilter = document.getElementById('supplierFilter').value;
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
-            let filteredData = data;
+
+            let filteredData = data.filter(row => {
+                // 年度筛选（当前数据都是2026年，可根据需要扩展）
+                if (yearFilter !== 'all' && yearFilter !== '2026') {
+                    return false;
+                }
+                return true;
+            });
+
+            // 月份筛选
             if (monthFilter !== 'all') {
                 const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月', '5': '5月', '6': '6月', '7': '7月', '8': '8月', '9': '9月', '10': '10月', '11': '11月', '12': '12月'};
                 filteredData = filteredData.filter(row => row.month === monthMap[monthFilter]);
             }
+
+            // 供应商筛选
             if (supplierFilter !== 'all') {
                 const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔', 'total': '汇总'};
                 filteredData = filteredData.filter(row => row.supplier === supplierMap[supplierFilter]);
             }
+
             filteredData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
                 tableBody.appendChild(tr);
             });
+
             updateStats(filteredData);
+            showInstantIndicator();
         }
+
+        // 更新统计卡片
         function updateStats(filteredData) {
             let totalReturnQty = 0, totalInputQty = 0, totalDppm = 0, count = 0;
             filteredData.forEach(row => {
@@ -202,18 +230,57 @@
                 totalDppm += row.dppm;
                 count++;
             });
-            document.getElementById('dppmValue').textContent = (totalDppm / count).toFixed(2);
+
+            const avgDppm = count > 0 ? (totalDppm / count).toFixed(2) : '0.00';
+            document.getElementById('dppmValue').textContent = avgDppm;
             document.getElementById('larValue').textContent = '100.00%';
             document.getElementById('returnQtyValue').textContent = totalReturnQty;
             document.getElementById('inputQtyValue').textContent = (totalInputQty / 1000000).toFixed(1) + 'M';
         }
+
+        // 显示即时更新提示
+        function showInstantIndicator() {
+            const indicator = document.getElementById('instantIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 1500);
+        }
+
+        // 重置筛选
         function resetFilters() {
+            document.getElementById('yearFilter').value = 'all';
             document.getElementById('monthFilter').value = 'all';
             document.getElementById('supplierFilter').value = 'all';
             initTable();
             updateStats(data);
+            showInstantIndicator();
         }
-        window.onload = function() { initTable(); };
+
+        // 为筛选器添加即时筛选事件监听
+        function setupInstantFilters() {
+            const yearFilter = document.getElementById('yearFilter');
+            const monthFilter = document.getElementById('monthFilter');
+            const supplierFilter = document.getElementById('supplierFilter');
+
+            // 使用防抖避免频繁触发
+            const debouncedFilter = () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    applyFilters();
+                }, 150); // 150ms 延迟
+            };
+
+            yearFilter.addEventListener('change', debouncedFilter);
+            monthFilter.addEventListener('change', debouncedFilter);
+            supplierFilter.addEventListener('change', debouncedFilter);
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            initTable();
+            setupInstantFilters();
+        };
     </script>
 </body>
 </html>
