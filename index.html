@@ -245,31 +245,17 @@
                 // 显示同步提示
                 showSyncMessage('正在从飞书同步数据，请稍候...');
 
-                // 触发GitHub Actions工作流
-                const response = await fetch('https://api.github.com/repos/akemengshou/akemengshou.github.io/dispatches', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        event_type: 'feishu-update'
-                    })
-                });
+                // 打开GitHub Actions页面让用户手动触发
+                const actionsUrl = 'https://github.com/akemengshou/akemengshou.github.io/actions/workflows/sync-feishu.yml';
+                window.open(actionsUrl, '_blank');
 
-                if (response.ok || response.status === 202) {
-                    showSyncMessage('同步已触发，等待GitHub Actions完成（约1-2分钟）...');
-                    // 等待后刷新数据
-                    setTimeout(async () => {
-                        await fetchData();
-                        showSyncMessage('✓ 数据已更新');
-                        setTimeout(() => hideSyncMessage(), 2000);
-                    }, 90000); // 等待90秒让GitHub Actions完成
-                } else {
-                    // 如果API调用失败，提示用户手动触发
-                    showSyncMessage('自动同步需要GitHub Token，请点击"手动同步"按钮');
-                    setTimeout(() => hideSyncMessage(), 5000);
-                }
+                showSyncMessage('请在新打开的GitHub Actions页面点击"Run workflow"触发同步，完成后返回此页面点击"刷新数据"');
+
+                // 30秒后自动刷新页面
+                setTimeout(() => {
+                    location.reload();
+                }, 30000);
+
             } catch (error) {
                 showSyncMessage('网络错误，请稍后重试');
                 setTimeout(() => hideSyncMessage(), 3000);
@@ -302,9 +288,10 @@
 
         // 手动同步 - 打开GitHub Actions页面
         function manualSync() {
-            window.open('https://github.com/akemengshou/akemengshou.github.io/actions/workflows/sync-feishu.yml', '_blank');
-            showSyncMessage('请在GitHub Actions页面点击"Run workflow"触发同步');
-            setTimeout(() => hideSyncMessage(), 5000);
+            const actionsUrl = 'https://github.com/akemengshou/akemengshou.github.io/actions/workflows/sync-feishu.yml';
+            window.open(actionsUrl, '_blank');
+            showSyncMessage('请在新打开的页面点击"Run workflow"触发同步，完成后返回此页面');
+            setTimeout(() => hideSyncMessage(), 8000);
         }
 
         // 防抖定时器
