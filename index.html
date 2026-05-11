@@ -432,26 +432,32 @@
             const allMonths = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
             const allSuppliers = ['AAC', '立讯', '睿翔'];
 
-            // 月度DPPM趋势图数据
-            let months = allMonths;
-            let dppmByMonth = allMonths.map(month => {
-                const monthData = filteredData.filter(row => row.month === month);
-                if (monthData.length === 0) return 0;
-                const totalDppm = monthData.reduce((sum, row) => sum + row.dppm, 0);
-                return (totalDppm / monthData.length).toFixed(2);
-            });
+            // 月度DPPM趋势图数据 - 只显示有数据的月份
+            const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月', '5': '5月', '6': '6月', '7': '7月', '8': '8月', '9': '9月', '10': '10月', '11': '11月', '12': '12月'};
 
-            // DPPM目标值（固定45.9）
-            let dppmTargetByMonth = allMonths.map(() => 45.9);
+            // 过滤出有数据的月份
+            let months = [];
+            let dppmByMonth = [];
+            let dppmTargetByMonth = [];
 
-            // 如果选择了特定月份，只显示该月份的数据
             if (monthFilter !== 'all') {
-                const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月', '5': '5月', '6': '6月', '7': '7月', '8': '8月', '9': '9月', '10': '10月', '11': '11月', '12': '12月'};
+                // 选择了特定月份
                 const selectedMonth = monthMap[monthFilter];
                 months = [selectedMonth];
                 dppmByMonth = [filteredData.length > 0 ?
                     (filteredData.reduce((sum, row) => sum + row.dppm, 0) / filteredData.length).toFixed(2) : 0];
                 dppmTargetByMonth = [45.9];
+            } else {
+                // 显示所有有数据的月份
+                allMonths.forEach(month => {
+                    const monthData = filteredData.filter(row => row.month === month);
+                    if (monthData.length > 0 && monthData.some(row => row.inputQty > 0)) {
+                        months.push(month);
+                        const totalDppm = monthData.reduce((sum, row) => sum + row.dppm, 0);
+                        dppmByMonth.push((totalDppm / monthData.length).toFixed(2));
+                        dppmTargetByMonth.push(45.9);
+                    }
+                });
             }
 
             // 月度DPPM趋势图
@@ -573,29 +579,29 @@
 
             // ========== IQC LAR图表 ==========
 
-            // 月度IQC LAR趋势图数据
-            let larByMonth = allMonths.map(month => {
-                const monthData = filteredData.filter(row => row.month === month);
-                if (monthData.length === 0) return 0;
-                // 计算平均LAR（将百分比转换为数值）
-                const totalLar = monthData.reduce((sum, row) => {
-                    const larValue = parseFloat(row.lar.replace('%', ''));
-                    return sum + larValue;
-                }, 0);
-                return (totalLar / monthData.length).toFixed(2);
-            });
+            // 月度IQC LAR趋势图数据 - 只显示有数据的月份
+            let larByMonth = [];
+            let larTargetByMonth = [];
 
-            // LAR目标值（99.13%）
-            let larTargetByMonth = allMonths.map(() => 99.13);
-
-            // 如果选择了特定月份，只显示该月份的数据
             if (monthFilter !== 'all') {
-                const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月', '5': '5月', '6': '6月', '7': '7月', '8': '8月', '9': '9月', '10': '10月', '11': '11月', '12': '12月'};
+                // 选择了特定月份
                 const selectedMonth = monthMap[monthFilter];
-                months = [selectedMonth];
                 larByMonth = [filteredData.length > 0 ?
                     (filteredData.reduce((sum, row) => sum + parseFloat(row.lar.replace('%', '')), 0) / filteredData.length).toFixed(2) : 0];
                 larTargetByMonth = [99.13];
+            } else {
+                // 显示所有有数据的月份
+                months.forEach(month => {
+                    const monthData = filteredData.filter(row => row.month === month);
+                    if (monthData.length > 0 && monthData.some(row => row.inputQty > 0)) {
+                        const totalLar = monthData.reduce((sum, row) => {
+                            const larValue = parseFloat(row.lar.replace('%', ''));
+                            return sum + larValue;
+                        }, 0);
+                        larByMonth.push((totalLar / monthData.length).toFixed(2));
+                        larTargetByMonth.push(99.13);
+                    }
+                });
             }
 
             // 月度IQC LAR趋势图
