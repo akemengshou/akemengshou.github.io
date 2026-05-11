@@ -233,17 +233,49 @@
             }
         }
 
-        // 刷新数据
+        // 刷新数据（从飞书实时获取）
         async function refreshData() {
             const btn = event.target;
-            btn.textContent = '刷新中...';
+            btn.textContent = '同步中...';
             btn.disabled = true;
 
-            await fetchData();
+            try {
+                // 调用Vercel API从飞书获取最新数据
+                const response = await fetch('/api/feishu');
+                if (!response.ok) {
+                    throw new Error('同步失败');
+                }
 
-            btn.textContent = '刷新数据';
-            btn.disabled = false;
-            showInstantIndicator();
+                const result = await response.json();
+                data = result.data;
+                metadata = result.metadata;
+
+                // 更新页面标题和时间
+                if (metadata.title) {
+                    document.querySelector('.header p').textContent = metadata.title + ' | 实时监控';
+                }
+                if (metadata.lastUpdated) {
+                    document.querySelector('.footer p').textContent = `数据来源: ${metadata.source || '飞书多维表格'} | 更新时间: ${metadata.lastUpdated}`;
+                }
+
+                // 刷新页面显示
+                initTable();
+                updateCharts(data);
+                showInstantIndicator();
+
+                btn.textContent = '✓ 已同步';
+                setTimeout(() => {
+                    btn.textContent = '刷新数据';
+                    btn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error('同步失败:', error);
+                btn.textContent = '同步失败';
+                setTimeout(() => {
+                    btn.textContent = '刷新数据';
+                    btn.disabled = false;
+                }, 2000);
+            }
         }
 
         // 从飞书同步数据（打开GitHub Actions页面）

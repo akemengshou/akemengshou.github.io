@@ -1,0 +1,16 @@
+{
+  "name": "antenna-dashboard",
+  "version": "1.0.0",
+  "description": "天线支架硬性指标数据看板",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  }
+}
