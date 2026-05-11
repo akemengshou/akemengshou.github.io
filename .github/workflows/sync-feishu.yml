@@ -4,9 +4,10 @@ on:
   # 支持手动触发
   workflow_dispatch:
 
-  # 定时任务：每周四上午9:50自动检查
+  # 定时任务：每天上午9点和下午5点自动检查
   schedule:
-    - cron: '50 9 * * 4'
+    - cron: '0 9 * * *'
+    - cron: '0 17 * * *'
 
   # 支持通过repository_dispatch事件触发（看板页面按钮调用）
   repository_dispatch:
