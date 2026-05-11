@@ -11,19 +11,13 @@
     { "supplier": "AAC", "month": "2月", "returnQty": 0, "inputQty": 1136256, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 101, "totalBatch": 101, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "AAC", "month": "3月", "returnQty": 0, "inputQty": 925544, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 85, "totalBatch": 85, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "AAC", "month": "4月", "returnQty": 0, "inputQty": 1068619, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 84, "totalBatch": 84, "lar": "100.00%", "larTarget": "99.13%" },
-    { "supplier": "AAC", "month": "5月", "returnQty": 0, "inputQty": 1068619, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 84, "totalBatch": 84, "lar": "100.00%", "larTarget": "99.13%" },
-    { "supplier": "AAC", "month": "6月", "returnQty": 0, "inputQty": 1068619, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 84, "totalBatch": 84, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "立讯", "month": "1月", "returnQty": 0, "inputQty": 605625, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 29, "totalBatch": 29, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "立讯", "month": "2月", "returnQty": 0, "inputQty": 420820, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 31, "totalBatch": 31, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "立讯", "month": "3月", "returnQty": 0, "inputQty": 600725, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 38, "totalBatch": 38, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "立讯", "month": "4月", "returnQty": 3, "inputQty": 676246, "dppm": 4.44, "dppmTarget": 45.9, "receiveBatch": 51, "totalBatch": 51, "lar": "100.00%", "larTarget": "99.13%" },
-    { "supplier": "立讯", "month": "5月", "returnQty": 3, "inputQty": 676246, "dppm": 4.44, "dppmTarget": 45.9, "receiveBatch": 51, "totalBatch": 51, "lar": "100.00%", "larTarget": "99.13%" },
-    { "supplier": "立讯", "month": "6月", "returnQty": 3, "inputQty": 676246, "dppm": 4.44, "dppmTarget": 45.9, "receiveBatch": 51, "totalBatch": 51, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "睿翔", "month": "1月", "returnQty": 29, "inputQty": 2720123, "dppm": 10.66, "dppmTarget": 45.9, "receiveBatch": 129, "totalBatch": 129, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "睿翔", "month": "2月", "returnQty": 0, "inputQty": 1882457, "dppm": 0.00, "dppmTarget": 45.9, "receiveBatch": 103, "totalBatch": 103, "lar": "100.00%", "larTarget": "99.13%" },
     { "supplier": "睿翔", "month": "3月", "returnQty": 3, "inputQty": 1962867, "dppm": 1.53, "dppmTarget": 45.9, "receiveBatch": 114, "totalBatch": 114, "lar": "100.00%", "larTarget": "99.13%" },
-    { "supplier": "睿翔", "month": "4月", "returnQty": 12, "inputQty": 2512996, "dppm": 4.78, "dppmTarget": 45.9, "receiveBatch": 237, "totalBatch": 238, "lar": "99.58%", "larTarget": "99.13%" },
-    { "supplier": "睿翔", "month": "5月", "returnQty": 12, "inputQty": 2512996, "dppm": 4.78, "dppmTarget": 45.9, "receiveBatch": 237, "totalBatch": 238, "lar": "99.58%", "larTarget": "99.13%" },
-    { "supplier": "睿翔", "month": "6月", "returnQty": 12, "inputQty": 2512996, "dppm": 4.78, "dppmTarget": 45.9, "receiveBatch": 237, "totalBatch": 238, "lar": "99.58%", "larTarget": "99.13%" }
+    { "supplier": "睿翔", "month": "4月", "returnQty": 12, "inputQty": 2512996, "dppm": 4.78, "dppmTarget": 45.9, "receiveBatch": 237, "totalBatch": 238, "lar": "99.58%", "larTarget": "99.13%" }
   ]
 }
