@@ -59,7 +59,9 @@
         tr:hover { background-color: #e8f4f8; }
         .highlight { background-color: #e8f5e9 !important; font-weight: bold; color: #2e7d32; }
         .warning { background-color: #fff3e0 !important; font-weight: bold; color: #e65100; }
+        .warning-yellow { background-color: #fff9c4 !important; font-weight: bold; color: #f57f17; }
         .warning-icon { color: #d32f2f !important; }
+        .warning-icon-yellow { color: #f57f17 !important; }
         .summary-row { background-color: #e3f2fd !important; font-weight: bold; }
         .target-cell { color: #1976d2; }
         .footer { background: #f8f9fa; padding: 20px 40px; text-align: center; color: #666; font-size: 13px; }
@@ -258,8 +260,19 @@
                 // LAR预警判断
                 const larValue = parseFloat(row.lar.replace('%', ''));
                 const larTargetValue = parseFloat(row.larTarget.replace('%', ''));
-                const larClass = larValue < larTargetValue ? 'warning' : 'highlight';
-                const larIcon = larValue < larTargetValue ? ' <span class="warning-icon">⚠️</span>' : '';
+                let larClass, larIcon;
+                if (larValue < larTargetValue) {
+                    // LAR未达标，红色警告
+                    larClass = 'warning';
+                    larIcon = ' <span class="warning-icon">⚠️</span>';
+                } else if (larValue < 100) {
+                    // LAR达标但不是100%，浅黄色警告
+                    larClass = 'warning-yellow';
+                    larIcon = ' <span class="warning-icon-yellow">⚠️</span>';
+                } else {
+                    larClass = 'highlight';
+                    larIcon = '';
+                }
 
                 tr.innerHTML = `
                     <td>${row.supplier}</td>
@@ -318,8 +331,13 @@
             larCard.className = 'stat-card';
 
             if (parseFloat(avgLar) < larTarget) {
+                // LAR未达标，红色警告
                 larCard.classList.add('danger');
                 larUnit.innerHTML = `目标: ${larTarget}% <span class="warning-icon">⚠️</span> 未达标`;
+            } else if (parseFloat(avgLar) < 100) {
+                // LAR达标但不是100%，浅黄色警告
+                larCard.classList.add('warning-yellow');
+                larUnit.innerHTML = `目标: ${larTarget}% <span class="warning-icon-yellow">⚠️</span> 非100%`;
             } else {
                 larCard.classList.add('success');
                 larUnit.innerHTML = `目标: ${larTarget}% ✅`;
