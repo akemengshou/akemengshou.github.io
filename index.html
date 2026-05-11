@@ -59,6 +59,7 @@
         tr:hover { background-color: #e8f4f8; }
         .highlight { background-color: #e8f5e9 !important; font-weight: bold; color: #2e7d32; }
         .warning { background-color: #fff3e0 !important; font-weight: bold; color: #e65100; }
+        .warning-icon { color: #d32f2f !important; }
         .summary-row { background-color: #e3f2fd !important; font-weight: bold; }
         .target-cell { color: #1976d2; }
         .footer { background: #f8f9fa; padding: 20px 40px; text-align: center; color: #666; font-size: 13px; }
@@ -252,13 +253,13 @@
 
                 // DPPM预警判断
                 const dppmClass = row.dppm > row.dppmTarget ? 'warning' : 'highlight';
-                const dppmIcon = row.dppm > row.dppmTarget ? ' ⚠️' : '';
+                const dppmIcon = row.dppm > row.dppmTarget ? ' <span class="warning-icon">⚠️</span>' : '';
 
                 // LAR预警判断
                 const larValue = parseFloat(row.lar.replace('%', ''));
                 const larTargetValue = parseFloat(row.larTarget.replace('%', ''));
                 const larClass = larValue < larTargetValue ? 'warning' : 'highlight';
-                const larIcon = larValue < larTargetValue ? ' ⚠️' : '';
+                const larIcon = larValue < larTargetValue ? ' <span class="warning-icon">⚠️</span>' : '';
 
                 tr.innerHTML = `
                     <td>${row.supplier}</td>
@@ -305,7 +306,7 @@
 
             if (parseFloat(avgDppm) > dppmTarget) {
                 dppmCard.classList.add('danger');
-                dppmUnit.innerHTML = `目标: ${dppmTarget} ⚠️ 超标`;
+                dppmUnit.innerHTML = `目标: ${dppmTarget} <span class="warning-icon">⚠️</span> 超标`;
             } else {
                 dppmCard.classList.add('success');
                 dppmUnit.innerHTML = `目标: ${dppmTarget} ✅`;
@@ -318,7 +319,7 @@
 
             if (parseFloat(avgLar) < larTarget) {
                 larCard.classList.add('danger');
-                larUnit.innerHTML = `目标: ${larTarget}% ⚠️ 未达标`;
+                larUnit.innerHTML = `目标: ${larTarget}% <span class="warning-icon">⚠️</span> 未达标`;
             } else {
                 larCard.classList.add('success');
                 larUnit.innerHTML = `目标: ${larTarget}% ✅`;
