@@ -8,7 +8,7 @@ on:
   schedule:
     - cron: '50 9 * * 4'
 
-  # 支持通过repository_dispatch事件触发（飞书Webhook调用）
+  # 支持通过repository_dispatch事件触发（看板页面按钮调用）
   repository_dispatch:
     types: [feishu-update]
 

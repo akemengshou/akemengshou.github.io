@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天线支架硬性指标数据看板</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://lf1-cdn-tos.bytegoofy.com/goofy/lark/op/h5-js-sdk-1.5.30/h5-js-sdk-lark.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
@@ -244,7 +245,7 @@
                 const githubToken = localStorage.getItem('github_token');
                 if (!githubToken) {
                     // 提示用户输入Token
-                    const token = prompt('请输入GitHub Personal Access Token以启用飞书同步功能：\n\n获取方式：GitHub Settings → Developer settings → Personal access tokens → Generate new token\n\n权限：repo (全部)');
+                    const token = prompt('请输入GitHub Personal Access Token以启用飞书同步功能：\n\n获取方式：\n1. 访问 https://github.com/settings/tokens\n2. 点击 "Generate new token (classic)"\n3. 勾选 "repo" 权限\n4. 生成并复制Token\n\n权限：repo (全部)');
                     if (!token) {
                         btn.textContent = '刷新数据';
                         btn.disabled = false;
@@ -269,7 +270,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('触发同步失败');
+                    throw new Error('触发同步失败，请检查Token是否正确');
                 }
 
                 btn.textContent = '✓ 已触发同步';
