@@ -281,15 +281,30 @@
 
         // 更新图表
         function updateCharts(filteredData) {
-            // 按月份聚合DPPM数据
-            const monthMap = {'1月': '1月', '2月': '2月', '3月': '3月', '4月': '4月'};
-            const months = ['1月', '2月', '3月', '4月'];
-            const dppmByMonth = months.map(month => {
+            const monthFilter = document.getElementById('monthFilter').value;
+            const supplierFilter = document.getElementById('supplierFilter').value;
+
+            // 获取所有月份和供应商
+            const allMonths = ['1月', '2月', '3月', '4月'];
+            const allSuppliers = ['AAC', '立讯', '睿翔'];
+
+            // 月度DPPM趋势图数据
+            let months = allMonths;
+            let dppmByMonth = allMonths.map(month => {
                 const monthData = filteredData.filter(row => row.month === month);
                 if (monthData.length === 0) return 0;
                 const totalDppm = monthData.reduce((sum, row) => sum + row.dppm, 0);
                 return (totalDppm / monthData.length).toFixed(2);
             });
+
+            // 如果选择了特定月份，只显示该月份的数据
+            if (monthFilter !== 'all') {
+                const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月'};
+                const selectedMonth = monthMap[monthFilter];
+                months = [selectedMonth];
+                dppmByMonth = [filteredData.length > 0 ?
+                    (filteredData.reduce((sum, row) => sum + row.dppm, 0) / filteredData.length).toFixed(2) : 0];
+            }
 
             // 月度DPPM趋势图
             const dppmCtx = document.getElementById('dppmChart').getContext('2d');
@@ -325,14 +340,23 @@
                 }
             });
 
-            // 供应商DPPM对比图
-            const suppliers = ['AAC', '立讯', '睿翔'];
-            const supplierDppm = suppliers.map(supplier => {
+            // 供应商DPPM对比图数据
+            let suppliers = allSuppliers;
+            let supplierDppm = allSuppliers.map(supplier => {
                 const supplierData = filteredData.filter(row => row.supplier === supplier);
                 if (supplierData.length === 0) return 0;
                 const totalDppm = supplierData.reduce((sum, row) => sum + row.dppm, 0);
                 return (totalDppm / supplierData.length).toFixed(2);
             });
+
+            // 如果选择了特定供应商，只显示该供应商的数据
+            if (supplierFilter !== 'all') {
+                const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔'};
+                const selectedSupplier = supplierMap[supplierFilter];
+                suppliers = [selectedSupplier];
+                supplierDppm = [filteredData.length > 0 ?
+                    (filteredData.reduce((sum, row) => sum + row.dppm, 0) / filteredData.length).toFixed(2) : 0];
+            }
 
             const supplierCtx = document.getElementById('supplierChart').getContext('2d');
             if (supplierChart) {
@@ -385,7 +409,7 @@
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     applyFilters();
-                }, 150); // 150ms 延迟
+                }, 50); // 50ms 延迟，更快响应
             };
 
             yearFilter.addEventListener('change', debouncedFilter);
