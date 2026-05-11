@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天线支架硬性指标数据看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
@@ -34,6 +35,13 @@
         .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 24px; font-weight: bold; color: #333; }
         .stat-unit { font-size: 12px; color: #999; }
+        .chart-section { background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .chart-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .chart-title::before { content: "📊"; font-size: 18px; }
+        .chart-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-box { background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .chart-box h4 { font-size: 14px; color: #666; margin-bottom: 10px; text-align: center; }
+        .chart-box canvas { max-height: 250px; }
         .table-container { overflow-x: auto; margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 12px; text-align: center; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -46,7 +54,7 @@
         .footer { background: #f8f9fa; padding: 20px 40px; text-align: center; color: #666; font-size: 13px; }
         .instant-indicator { display: inline-block; margin-left: 10px; color: #4caf50; font-size: 12px; opacity: 0; transition: opacity 0.3s ease; }
         .instant-indicator.show { opacity: 1; }
-        @media (max-width: 768px) { .container { border-radius: 0; } .header, .dashboard, .footer { padding: 20px; } .filter-controls { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .container { border-radius: 0; } .header, .dashboard, .footer { padding: 20px; } .filter-controls { grid-template-columns: 1fr; } .chart-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -122,6 +130,19 @@
                     <div class="stat-label">投入数</div>
                     <div class="stat-value" id="inputQtyValue">15.6M</div>
                     <div class="stat-unit">Total</div>
+                </div>
+            </div>
+            <div class="chart-section">
+                <div class="chart-title">数据趋势图表</div>
+                <div class="chart-container">
+                    <div class="chart-box">
+                        <h4>月度DPPM趋势</h4>
+                        <canvas id="dppmChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>供应商DPPM对比</h4>
+                        <canvas id="supplierChart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="table-container">
@@ -213,6 +234,7 @@
             });
 
             updateStats(filteredData);
+            updateCharts(filteredData);
             showInstantIndicator();
         }
 
@@ -249,7 +271,107 @@
             document.getElementById('supplierFilter').value = 'all';
             initTable();
             updateStats(data);
+            updateCharts(data);
             showInstantIndicator();
+        }
+
+        // 图表实例
+        let dppmChart = null;
+        let supplierChart = null;
+
+        // 更新图表
+        function updateCharts(filteredData) {
+            // 按月份聚合DPPM数据
+            const monthMap = {'1月': '1月', '2月': '2月', '3月': '3月', '4月': '4月'};
+            const months = ['1月', '2月', '3月', '4月'];
+            const dppmByMonth = months.map(month => {
+                const monthData = filteredData.filter(row => row.month === month);
+                if (monthData.length === 0) return 0;
+                const totalDppm = monthData.reduce((sum, row) => sum + row.dppm, 0);
+                return (totalDppm / monthData.length).toFixed(2);
+            });
+
+            // 月度DPPM趋势图
+            const dppmCtx = document.getElementById('dppmChart').getContext('2d');
+            if (dppmChart) {
+                dppmChart.destroy();
+            }
+            dppmChart = new Chart(dppmCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'DPPM',
+                        data: dppmByMonth,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'DPPM' }
+                        }
+                    }
+                }
+            });
+
+            // 供应商DPPM对比图
+            const suppliers = ['AAC', '立讯', '睿翔'];
+            const supplierDppm = suppliers.map(supplier => {
+                const supplierData = filteredData.filter(row => row.supplier === supplier);
+                if (supplierData.length === 0) return 0;
+                const totalDppm = supplierData.reduce((sum, row) => sum + row.dppm, 0);
+                return (totalDppm / supplierData.length).toFixed(2);
+            });
+
+            const supplierCtx = document.getElementById('supplierChart').getContext('2d');
+            if (supplierChart) {
+                supplierChart.destroy();
+            }
+            supplierChart = new Chart(supplierCtx, {
+                type: 'bar',
+                data: {
+                    labels: suppliers,
+                    datasets: [{
+                        label: 'DPPM',
+                        data: supplierDppm,
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(132, 250, 176, 0.8)'
+                        ],
+                        borderColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#84fab0'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'DPPM' }
+                        }
+                    }
+                }
+            });
         }
 
         // 为筛选器添加即时筛选事件监听
@@ -274,6 +396,7 @@
         // 页面加载时初始化
         window.onload = function() {
             initTable();
+            updateCharts(data);
             setupInstantFilters();
         };
     </script>
