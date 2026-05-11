@@ -1,42 +1,32 @@
 #!/usr/bin/env node
 
 /**
- * 飞书数据同步脚本
+ * 飞书数据同步脚本（通过MCP）
  * 使用方法: node sync-feishu.js
+ *
+ * 此脚本通过飞书MCP读取数据，无需配置App ID和Secret
  */
 
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
-// 飞书应用凭证（从环境变量或配置文件读取）
-const FEISHU_APP_ID = process.env.FEISHU_APP_ID;
-const FEISHU_APP_SECRET = process.env.FEISHU_APP_SECRET;
+// 飞书文档配置
 const SPREADSHEET_TOKEN = 'BIMhszZpohx6JItqyLYcx2VjnDf';
 const SHEET_ID = 'QkhGvp';
 
-async function getTenantAccessToken() {
-    const response = await axios.post('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
-        app_id: FEISHU_APP_ID,
-        app_secret: FEISHU_APP_SECRET
-    });
-    return response.data.tenant_access_token;
-}
+function fetchSheetDataViaMCP() {
+    console.log('🔄 正在通过飞书MCP读取数据...');
 
-async function fetchSheetData() {
-    const accessToken = await getTenantAccessToken();
-    const response = await axios.get(
-        `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${SPREADSHEET_TOKEN}/values/${SHEET_ID}!A1:V30`,
-        {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            },
-            params: {
-                valueRenderOption: 'FormattedValue'
-            }
-        }
-    );
-    return response.data.data.valueRange.values;
+    // 使用MCP工具读取电子表格数据
+    const mcpCommand = `claude mcp call feishu-mcp-pro sheet_ops '{"action":"read","params":{"spreadsheet_token":"${SPREADSHEET_TOKEN}","range":"${SHEET_ID}!A1:V30","render_option":"FormattedValue"}}'`;
+
+    try {
+        const result = execSync(mcpCommand, { encoding: 'utf-8' });
+        return JSON.parse(result);
+    } catch (error) {
+        throw new Error(`MCP调用失败: ${error.message}`);
+    }
 }
 
 function parseData(values) {
@@ -123,25 +113,9 @@ function parseData(values) {
 
 async function main() {
     try {
-        console.log('🔄 正在从飞书同步数据...');
-
-        // 检查凭证
-        if (!FEISHU_APP_ID || !FEISHU_APP_SECRET) {
-            console.error('❌ 错误: 请设置环境变量 FEISHU_APP_ID 和 FEISHU_APP_SECRET');
-            console.log('');
-            console.log('设置方法:');
-            console.log('  Windows PowerShell:');
-            console.log('    $env:FEISHU_APP_ID="your_app_id"');
-            console.log('    $env:FEISHU_APP_SECRET="your_app_secret"');
-            console.log('');
-            console.log('  或创建 .env 文件:');
-            console.log('    FEISHU_APP_ID=your_app_id');
-            console.log('    FEISHU_APP_SECRET=your_app_secret');
-            process.exit(1);
-        }
-
         // 获取数据
-        const values = await fetchSheetData();
+        const result = fetchSheetDataViaMCP();
+        const values = result.values;
         console.log('✅ 成功获取飞书数据');
 
         // 解析数据
@@ -149,7 +123,7 @@ async function main() {
         console.log(`✅ 解析完成: ${data.length} 条记录`);
 
         // 构建结果
-        const result = {
+        const output = {
             metadata: {
                 title: '天线支架硬性指标数据',
                 source: '飞书多维表格 - 2026年天线支架IQC数据',
@@ -166,14 +140,14 @@ async function main() {
 
         // 写入文件
         const outputPath = path.join(__dirname, 'data.json');
-        fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+        fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
         console.log(`✅ 数据已保存到: ${outputPath}`);
 
         // 显示数据摘要
         console.log('');
         console.log('📊 数据摘要:');
-        const suppliers = [...new Set(data.map(d => d.supplier))];
-        suppliers.forEach(supplier => {
+        const suppliersList = [...new Set(data.map(d => d.supplier))];
+        suppliersList.forEach(supplier => {
             const supplierData = data.filter(d => d.supplier === supplier);
             const totalReturn = supplierData.reduce((sum, d) => sum + d.returnQty, 0);
             const totalInput = supplierData.reduce((sum, d) => sum + d.inputQty, 0);
@@ -186,10 +160,6 @@ async function main() {
 
     } catch (error) {
         console.error('❌ 同步失败:', error.message);
-        if (error.response) {
-            console.error('   状态码:', error.response.status);
-            console.error('   错误信息:', error.response.data);
-        }
         process.exit(1);
     }
 }
