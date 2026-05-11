@@ -136,12 +136,22 @@
                 <div class="chart-title">数据趋势图表</div>
                 <div class="chart-container">
                     <div class="chart-box">
-                        <h4>月度DPPM趋势</h4>
+                        <h4>月度DPPM趋势（含目标值）</h4>
                         <canvas id="dppmChart"></canvas>
                     </div>
                     <div class="chart-box">
-                        <h4>供应商DPPM对比</h4>
+                        <h4>供应商DPPM对比（含目标值）</h4>
                         <canvas id="supplierChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="chart-box">
+                        <h4>月度IQC LAR趋势（含目标值）</h4>
+                        <canvas id="larChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>供应商IQC LAR对比（含目标值）</h4>
+                        <canvas id="larSupplierChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -278,6 +288,8 @@
         // 图表实例
         let dppmChart = null;
         let supplierChart = null;
+        let larChart = null;
+        let larSupplierChart = null;
 
         // 更新图表
         function updateCharts(filteredData) {
@@ -297,6 +309,9 @@
                 return (totalDppm / monthData.length).toFixed(2);
             });
 
+            // DPPM目标值（固定45.9）
+            let dppmTargetByMonth = allMonths.map(() => 45.9);
+
             // 如果选择了特定月份，只显示该月份的数据
             if (monthFilter !== 'all') {
                 const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月'};
@@ -304,6 +319,7 @@
                 months = [selectedMonth];
                 dppmByMonth = [filteredData.length > 0 ?
                     (filteredData.reduce((sum, row) => sum + row.dppm, 0) / filteredData.length).toFixed(2) : 0];
+                dppmTargetByMonth = [45.9];
             }
 
             // 月度DPPM趋势图
@@ -323,13 +339,24 @@
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4
+                    }, {
+                        label: 'DPPM目标',
+                        data: dppmTargetByMonth,
+                        borderColor: '#ff6b6b',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
                     },
                     scales: {
                         y: {
@@ -349,6 +376,9 @@
                 return (totalDppm / supplierData.length).toFixed(2);
             });
 
+            // DPPM目标值
+            let supplierDppmTarget = allSuppliers.map(() => 45.9);
+
             // 如果选择了特定供应商，只显示该供应商的数据
             if (supplierFilter !== 'all') {
                 const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔'};
@@ -356,6 +386,7 @@
                 suppliers = [selectedSupplier];
                 supplierDppm = [filteredData.length > 0 ?
                     (filteredData.reduce((sum, row) => sum + row.dppm, 0) / filteredData.length).toFixed(2) : 0];
+                supplierDppmTarget = [45.9];
             }
 
             const supplierCtx = document.getElementById('supplierChart').getContext('2d');
@@ -380,18 +411,177 @@
                             '#84fab0'
                         ],
                         borderWidth: 2
+                    }, {
+                        label: 'DPPM目标',
+                        data: supplierDppmTarget,
+                        type: 'line',
+                        borderColor: '#ff6b6b',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             title: { display: true, text: 'DPPM' }
+                        }
+                    }
+                }
+            });
+
+            // ========== IQC LAR图表 ==========
+
+            // 月度IQC LAR趋势图数据
+            let larByMonth = allMonths.map(month => {
+                const monthData = filteredData.filter(row => row.month === month);
+                if (monthData.length === 0) return 0;
+                // 计算平均LAR（将百分比转换为数值）
+                const totalLar = monthData.reduce((sum, row) => {
+                    const larValue = parseFloat(row.lar.replace('%', ''));
+                    return sum + larValue;
+                }, 0);
+                return (totalLar / monthData.length).toFixed(2);
+            });
+
+            // LAR目标值（99.13%）
+            let larTargetByMonth = allMonths.map(() => 99.13);
+
+            // 如果选择了特定月份，只显示该月份的数据
+            if (monthFilter !== 'all') {
+                const monthMap = {'1': '1月', '2': '2月', '3': '3月', '4': '4月'};
+                const selectedMonth = monthMap[monthFilter];
+                months = [selectedMonth];
+                larByMonth = [filteredData.length > 0 ?
+                    (filteredData.reduce((sum, row) => sum + parseFloat(row.lar.replace('%', '')), 0) / filteredData.length).toFixed(2) : 0];
+                larTargetByMonth = [99.13];
+            }
+
+            // 月度IQC LAR趋势图
+            const larCtx = document.getElementById('larChart').getContext('2d');
+            if (larChart) {
+                larChart.destroy();
+            }
+            larChart = new Chart(larCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'IQC LAR',
+                        data: larByMonth,
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'LAR目标',
+                        data: larTargetByMonth,
+                        borderColor: '#ff6b6b',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 95,
+                            max: 100,
+                            title: { display: true, text: 'IQC LAR (%)' }
+                        }
+                    }
+                }
+            });
+
+            // 供应商IQC LAR对比图数据
+            let larBySupplier = allSuppliers.map(supplier => {
+                const supplierData = filteredData.filter(row => row.supplier === supplier);
+                if (supplierData.length === 0) return 0;
+                const totalLar = supplierData.reduce((sum, row) => {
+                    const larValue = parseFloat(row.lar.replace('%', ''));
+                    return sum + larValue;
+                }, 0);
+                return (totalLar / supplierData.length).toFixed(2);
+            });
+
+            // LAR目标值
+            let larSupplierTarget = allSuppliers.map(() => 99.13);
+
+            // 如果选择了特定供应商，只显示该供应商的数据
+            if (supplierFilter !== 'all') {
+                const supplierMap = {'aac': 'AAC', 'lixun': '立讯', 'ruixiang': '睿翔'};
+                const selectedSupplier = supplierMap[supplierFilter];
+                suppliers = [selectedSupplier];
+                larBySupplier = [filteredData.length > 0 ?
+                    (filteredData.reduce((sum, row) => sum + parseFloat(row.lar.replace('%', '')), 0) / filteredData.length).toFixed(2) : 0];
+                larSupplierTarget = [99.13];
+            }
+
+            const larSupplierCtx = document.getElementById('larSupplierChart').getContext('2d');
+            if (larSupplierChart) {
+                larSupplierChart.destroy();
+            }
+            larSupplierChart = new Chart(larSupplierCtx, {
+                type: 'bar',
+                data: {
+                    labels: suppliers,
+                    datasets: [{
+                        label: 'IQC LAR',
+                        data: larBySupplier,
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.8)',
+                            'rgba(139, 195, 74, 0.8)',
+                            'rgba(205, 220, 57, 0.8)'
+                        ],
+                        borderColor: [
+                            '#4caf50',
+                            '#8bc34a',
+                            '#cddc39'
+                        ],
+                        borderWidth: 2
+                    }, {
+                        label: 'LAR目标',
+                        data: larSupplierTarget,
+                        type: 'line',
+                        borderColor: '#ff6b6b',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 95,
+                            max: 100,
+                            title: { display: true, text: 'IQC LAR (%)' }
                         }
                     }
                 }
