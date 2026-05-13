@@ -294,24 +294,17 @@
         // 防抖定时器
         let debounceTimer;
 
-        // 初始化表格
+        // 初始化表格（已禁用）
         function initTable() {
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = '';
-            data.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${row.supplier}</td><td>${row.month}</td><td>${row.returnQty}</td><td>${row.inputQty.toLocaleString()}</td><td class="highlight">${row.dppm}</td><td class="target-cell">${row.dppmTarget}</td><td>${row.receiveBatch}</td><td>${row.totalBatch}</td><td class="highlight">${row.lar}</td><td class="target-cell">${row.larTarget}</td>`;
-                tableBody.appendChild(tr);
-            });
+            // 表格已隐藏，不执行任何操作
+            return;
         }
 
-        // 应用筛选（即时筛选）
+        // 应用筛选（即时筛选）- 表格已隐藏
         function applyFilters() {
             const yearFilter = document.getElementById('yearFilter').value;
             const monthFilter = document.getElementById('monthFilter').value;
             const supplierFilter = document.getElementById('supplierFilter').value;
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = '';
 
             let filteredData = data.filter(row => {
                 // 年度筛选（当前数据都是2026年，可根据需要扩展）
@@ -333,50 +326,7 @@
                 filteredData = filteredData.filter(row => row.supplier === supplierMap[supplierFilter]);
             }
 
-            filteredData.forEach(row => {
-                const tr = document.createElement('tr');
-
-                // DPPM预警判断
-                const dppmClass = row.dppm > row.dppmTarget ? 'warning' : 'highlight';
-                const dppmIcon = row.dppm > row.dppmTarget ? ' <span class="warning-icon">⚠️</span>' : '';
-
-                // LAR预警判断
-                const larValue = parseFloat(row.lar.replace('%', ''));
-                const larTargetValue = parseFloat(row.larTarget.replace('%', ''));
-                let larClass, larIcon;
-
-                console.log(`LAR检查: ${row.supplier} ${row.month} = ${larValue}%, 目标=${larTargetValue}%`);
-
-                if (larValue < larTargetValue) {
-                    // LAR未达标，红色警告
-                    larClass = 'warning';
-                    larIcon = ' <span class="warning-icon">⚠️</span>';
-                    console.log(`  -> 红色警告: ${larValue}% < ${larTargetValue}%`);
-                } else if (larValue < 100) {
-                    // LAR达标但不是100%，浅黄色警告
-                    larClass = 'warning-yellow';
-                    larIcon = ' <span class="warning-icon-yellow">⚠️</span>';
-                    console.log(`  -> 浅黄色警告: ${larValue}% < 100%`);
-                } else {
-                    larClass = 'highlight';
-                    larIcon = '';
-                    console.log(`  -> 正常: ${larValue}% = 100%`);
-                }
-
-                tr.innerHTML = `
-                    <td>${row.supplier}</td>
-                    <td>${row.month}</td>
-                    <td>${row.returnQty}</td>
-                    <td>${row.inputQty.toLocaleString()}</td>
-                    <td class="${dppmClass}">${row.dppm}${dppmIcon}</td>
-                    <td class="target-cell">${row.dppmTarget}</td>
-                    <td>${row.receiveBatch}</td>
-                    <td>${row.totalBatch}</td>
-                    <td class="${larClass}">${row.lar}${larIcon}</td>
-                    <td class="target-cell">${row.larTarget}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
+            // 表格已隐藏，跳过填充表格的代码
 
             updateStats(filteredData);
             updateCharts(filteredData);
