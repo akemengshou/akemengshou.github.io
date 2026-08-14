@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCR 评审节点看板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .header .today {
+            font-size: 14px;
+            color: #4a90d9;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* Status Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        /* Timeline Grid */
+        .timeline-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .timeline-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 900px;
+        }
+
+        .timeline-table th {
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+            border-bottom: 2px solid #e8e8e8;
+            white-space: nowrap;
+        }
+
+        .timeline-table th:first-child {
+            text-align: left;
+            padding-left: 12px;
+            min-width: 100px;
+        }
+
+        .timeline-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .timeline-table td:first-child {
+            text-align: left;
+            padding-left: 12px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .timeline-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .timeline-table tr:hover {
+            background: #f8f9fb;
+        }
+
+        /* Node Cells */
+        .node-cell {
+            position: relative;
+        }
+
+        .node-date {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 85px;
+            position: relative;
+        }
+
+        .node-date.past {
+            background: #f5f5f5;
+            color: #aaa;
+        }
+
+        .node-date.today {
+            background: linear-gradient(135deg, #ff9800, #f44336);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(255,152,0,0.5);
+            animation: todayPulse 1.5s ease-in-out infinite;
+        }
+
+        .node-date.danger {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #ef9a9a;
+            font-weight: 600;
+            animation: dangerPulse 1s ease-in-out infinite;
+        }
+
+        .node-date.warning {
+            background: #fff8e1;
+            color: #e65100;
+            border: 2px solid #ffcc80;
+            font-weight: 600;
+        }
+
+        .node-date.upcoming {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+
+        .node-date.future {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+
+        .node-date.tbd {
+            background: #fafafa;
+            color: #bbb;
+            border: 1px dashed #ddd;
+            font-style: italic;
+        }
+
+        .node-date .days-badge {
+            display: inline-block;
+            font-size: 10px;
+            margin-left: 4px;
+            font-weight: 700;
+        }
+
+        .node-date.today .days-badge { color: #fff; }
+        .node-date.danger .days-badge { color: #c62828; }
+        .node-date.warning .days-badge { color: #e65100; }
+        .node-date.upcoming .days-badge { color: #1565c0; }
+
+        /* Urgency icon */
+        .node-date.danger::before,
+        .node-date.warning::before {
+            content: '!';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .node-date.danger::before {
+            background: #c62828;
+            color: #fff;
+            animation: iconBounce 0.6s ease-in-out infinite;
+        }
+
+        .node-date.warning::before {
+            background: #e65100;
+            color: #fff;
+        }
+
+        @keyframes todayPulse {
+            0%, 100% { box-shadow: 0 2px 8px rgba(255,152,0,0.5); }
+            50% { box-shadow: 0 2px 16px rgba(255,152,0,0.9); }
+        }
+
+        @keyframes dangerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        /* Now Line */
+        /* No today line */
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .footer a {
+            color: #4a90d9;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⭐ NCR 评审节点看板</h1>
+        <div class="subtitle">所有项目评审节点一览</div>
+        <div class="today" id="todayDate"></div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#ff9800,#f44336);"></div> 今天</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffebee;border:2px solid #ef9a9a;"></div> 3天内</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fff8e1;border:2px solid #ffcc80;"></div> 7天内</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e3f2fd;border:1px solid #90caf9;"></div> 即将到来</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f5f5f5;border:1px solid #e0e0e0;"></div> 已过期</div>
+    </div>
+
+    <div class="timeline-container">
+        <table class="timeline-table" id="timelineTable">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        数据来源：飞书文档内嵌电子表格 | 更新时间：<span id="updateTime"></span>
+    </div>
+
+    <script>
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        document.getElementById('todayDate').textContent =
+            '今日日期：' + today.getFullYear() + '/' +
+            String(today.getMonth() + 1).padStart(2, '0') + '/' +
+            String(today.getDate()).padStart(2, '0') +
+            ' 周' + ['日', '一', '二', '三', '四', '五', '六'][today.getDay()];
+
+        document.getElementById('updateTime').textContent =
+            today.getFullYear() + '-' +
+            String(today.getMonth() + 1).padStart(2, '0') + '-' +
+            String(today.getDate()).padStart(2, '0');
+
+        const projects = [
+            { name: 'Denver', nodes: ['2026/5/19', '2026/6/16', '2026/7/10', '2026/8/17', '2026/9/18', '2026/11/16', '2027/1/21'] },
+            { name: 'Canberra', nodes: ['2026/6/5', '2026/6/17', '2026/6/30', '2026/7/28', '2026/8/15', '2026/9/3', '2026/10/17'] },
+            { name: 'Venice', nodes: ['2025/12/4', '2026/1/6', '2026/2/2', '2026/4/27', '2026/7/21', '2026/8/11', '2026/9/17'] },
+            { name: 'SOFIA', nodes: ['2026/5/13', '2026/6/16', '2026/7/13', '2026/8/18', '2026/9/18', '2026/11/11', '2026/12/15'] },
+            { name: 'Darwin', nodes: ['/', '/', '2026/5/22', '2026/6/22', '2026/7/24', '2026/8/25', '2026/9/23'] },
+            { name: 'MAINZ', nodes: ['2026/6/20', '2026/7/10', '2026/7/29', '2026/9/3', '2026/9/29', '2026/10/19', '2026/11/26'] },
+            { name: 'VALENCIA', nodes: ['2026/6/12', '2026/7/7', '2026/7/29', '2026/9/8', '2026/9/29', '2026/10/19', '2026/11/26'] },
+            { name: 'YONGAN', nodes: ['/', '/', '/', '2026/10/26', '2026/12/4', '2027/1/22', '2027/3/19'] },
+            { name: 'TAIAN', nodes: ['/', '/', '/', '2026/11/4', '2026/12/7', '2027/2/17', '2027/3/18'] }
+        ];
+
+        // Note: Dashboard data is read from config.json during scan.
+        // To update this dashboard dynamically, open it via a local server
+        // or use the scan script to regenerate this file.
+
+        const nodeNames = ['NCR1', 'NCR2', 'NCR3', 'NCR4', 'NCR4A', 'NCR5', 'NCR6'];
+
+        function parseDate(str) {
+            if (!str || str === '/') return null;
+            const parts = str.split('/');
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+
+        function getStatus(dateStr) {
+            if (!dateStr || dateStr === '/') return 'tbd';
+            const d = parseDate(dateStr);
+            const diff = Math.floor((d - today) / (1000 * 60 * 60 * 24));
+            if (diff < 0) return 'past';
+            if (diff === 0) return 'today';
+            if (diff <= 3) return 'danger';
+            if (diff <= 7) return 'warning';
+            if (diff <= 14) return 'upcoming';
+            return 'future';
+        }
+
+        function getDaysText(dateStr) {
+            if (!dateStr || dateStr === '/') return '';
+            const d = parseDate(dateStr);
+            const diff = Math.floor((d - today) / (1000 * 60 * 60 * 24));
+            if (diff < 0) return Math.abs(diff) + '天前';
+            if (diff === 0) return '今天';
+            return diff + '天后';
+        }
+
+        // Build header
+        const thead = document.getElementById('tableHead');
+        let headHtml = '<tr><th>项目</th>';
+        nodeNames.forEach(n => { headHtml += '<th>' + n + '</th>'; });
+        headHtml += '</tr>';
+        thead.innerHTML = headHtml;
+
+        // Build body
+        const tbody = document.getElementById('tableBody');
+        let bodyHtml = '';
+
+        projects.forEach(p => {
+            bodyHtml += '<tr><td>' + p.name + '</td>';
+            p.nodes.forEach((d, i) => {
+                const status = getStatus(d);
+                const daysText = getDaysText(d);
+                const displayDate = (!d || d === '/') ? 'TBD' :
+                    d.split('/').slice(1).join('/');
+
+                let cellContent = '<span class="node-date ' + status + '">' +
+                    displayDate;
+                if (daysText && status !== 'tbd') {
+                    cellContent += ' <span class="days-badge">' + daysText + '</span>';
+                }
+                cellContent += '</span>';
+
+                bodyHtml += '<td class="node-cell">' + cellContent + '</td>';
+            });
+            bodyHtml += '</tr>';
+        });
+
+        tbody.innerHTML = bodyHtml;
+    </script>
+</body>
+</html>
